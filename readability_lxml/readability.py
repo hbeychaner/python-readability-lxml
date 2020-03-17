@@ -286,12 +286,28 @@ class Document:
 				elem.drop_tree()
 
 	def transform_misused_divs_into_paragraphs(self):
-		for elem in self.tags(self.html, 'div'):
-			# transform <div>s that do not contain other block elements into <p>s
-			if not REGEXES['divToPElementsRe'].search(unicode(''.join(map(tostring, list(elem))))):
-				#self.debug("Altering %s to p" % (describe(elem)))
-				elem.tag = "p"
-				#print "Fixed element "+describe(elem)
+            for elem in self.tags(self.html, 'div'):
+            # transform <div>s that do not contain other block elements into
+            # <p>s
+            #FIXME: The current implementation ignores all descendants that
+            # are not direct children of elem
+            # This results in incorrect results in case there is an <img>
+            # buried within an <a> for example
+                try:
+                    if not REGEXES['divToPElementsRe'].search(
+                            str_(b''.join(map(tostring, list(elem))))):
+                        #log.debug("Altering %s to p" % (describe(elem)))
+                        elem.tag = "p"
+                        #print "Fixed element "+describe(elem)
+                except:
+                    elem_ = list(elem)
+                    elem_s = [str(i) for i in elem_]
+                    joined_ = ''.join(elem_s)
+                    if not REGEXES['divToPElementsRe'].search(
+                            str_(joined_.encode('utf-8'))):
+                        #log.debug("Altering %s to p" % (describe(elem)))
+                        elem.tag = "p"
+                        #print "Fixed element "+describe(elem)
 				
 		for elem in self.tags(self.html, 'div'):
 			if elem.text and elem.text.strip():
